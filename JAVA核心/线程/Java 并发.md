@@ -157,20 +157,53 @@ public static void main(String[] args) {
 
 ## Daemon
 
-守护线程是程序运行时在后台提供服务的线程，不属于程序中不可或缺的部分。
+守护线程是一种特殊的线程，就和它的名字一样，它是系统的守护者，在后台默默地守护一些系统服务，比如垃圾回收线程，JIT线程就可以理解守护线程。与之对应的就是用户线程，用户线程就可以认为是系统的工作线程，它会完成整个系统的业务操作。用户线程完全结束后就意味着整个系统的业务任务全部结束了，因此系统就没有对象需要守护的了，守护线程自然而然就会退。当一个Java应用，只有守护线程的时候，虚拟机就会自然退出。下面以一个简单的例子来表述Daemon线程的使用。
 
-当所有非守护线程结束时，程序也就终止，同时会杀死所有守护线程。
-
-main() 属于非守护线程。
-
-使用 setDaemon() 方法将一个线程设置为守护线程。
-
-```java
-public static void main(String[] args) {
-    Thread thread = new Thread(new MyRunnable());
-    thread.setDaemon(true);
+```
+public class DaemonDemo {
+    public static void main(String[] args) {
+        Thread daemonThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        System.out.println("i am alive");
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        System.out.println("finally block");
+                    }
+                }
+            }
+        });
+        daemonThread.setDaemon(true);
+        daemonThread.start();
+        //确保main线程结束前能给daemonThread能够分到时间片
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
 ```
+
+输出结果为：
+
+> i am alive
+> finally block
+> i am alive
+
+上面的例子中daemodThread run方法中是一个while死循环，会一直打印,但是当main线程结束后daemonThread就会退出所以不会出现死循环的情况。main线程先睡眠800ms保证daemonThread能够拥有一次时间片的机会，也就是说可以正常执行一次打印“i am alive”操作和一次finally块中"finally block"操作。紧接着main 线程结束后，daemonThread退出，这个时候只打印了"i am alive"并没有打印finnal块中的。因此，这里需要注意的是**守护线程在退出的时候并不会执行finnaly块中的代码，所以将释放资源等操作不要放在finnaly块中执行，这种操作是不安全的**
+
+线程可以通过setDaemon(true)的方法将线程设置为守护线程。并且需要注意的是设置守护线程要先于start()方法，否则会报
+
+> Exception in thread "main" java.lang.IllegalThreadStateException
+> 	at java.lang.Thread.setDaemon(Thread.java:1365)
+> 	at learn.DaemonDemo.main(DaemonDemo.java:19)
+
+这样的异常，但是该线程还是会执行，只不过会当做正常的用户线程执行。
 
 ## sleep()
 
@@ -188,9 +221,25 @@ public void run() {
 }
 ```
 
+需要注意的是如果当前线程获得了锁，sleep方法并不会失去锁。sleep方法经常拿来与Object.wait()方法进行比价，这也是面试经常被问的地方。
+
+> **sleep() VS wait()**
+
+两者主要的区别：
+
+1. sleep()方法是Thread的静态方法，而wait是Object实例方法
+2. wait()方法必须要在同步方法或者同步块中调用，也就是必须已经获得对象锁。而sleep()方法没有这个限制可以在任何地方种使用。另外，wait()方法会释放占有的对象锁，使得该线程进入等待池中，等待下一次获取资源。而sleep()方法只是会让出CPU并不会释放掉对象锁；
+3. sleep()方法在休眠时间达到后如果再次获得CPU时间片就会继续执行，而wait()方法必须等待Object.notift/Object.notifyAll通知后，才会离开等待池，并且再次获得CPU时间片才会继续执行。
+
 ## yield()
 
-对静态方法 Thread.yield() 的调用声明了当前线程已经完成了生命周期中最重要的部分，可以切换给其它线程来执行。该方法只是对线程调度器的一个建议，而且也只是建议具有相同优先级的其它线程可以运行。
+public static native void yield();这是一个静态方法，一旦执行，它会是当前线程让出CPU，但是，需要注意的是，让出的CPU并不是代表当前线程不再运行了，如果在下一次竞争中，又获得了CPU时间片当前线程依然会继续运行。另外，让出的时间片只会分配**给当前线程相同优先级**的线程。什么是线程优先级了？下面就来具体聊一聊。
+
+现代操作系统基本采用时分的形式调度运行的线程，操作系统会分出一个个时间片，线程会分配到若干时间片，当前时间片用完后就会发生线程调度，并等待这下次分配。线程分配到的时间多少也就决定了线程使用处理器资源的多少，而线程优先级就是决定线程需要或多或少分配一些处理器资源的线程属性。
+
+在Java程序中，通过一个**整型成员变量Priority**来控制优先级，优先级的范围从1~10.在构建线程的时候可以通过**setPriority(int)**方法进行设置，默认优先级为5，优先级高的线程相较于优先级低的线程优先获得处理器时间片。需要注意的是在不同JVM以及操作系统上，线程规划存在差异，有些操作系统甚至会忽略线程优先级的设定。
+
+另外需要注意的是，sleep()和yield()方法，同样都是当前线程会交出处理器资源，而它们不同的是，sleep()交出来的时间片其他线程都可以去竞争，也就是说都有机会获得当前线程让出的时间片。而yield()方法只允许与当前线程具有相同优先级的线程能够获得释放出来的CPU时间片。
 
 ```java
 public void run() {
@@ -201,6 +250,10 @@ public void run() {
 # 四、中断
 
 一个线程执行完毕之后会自动结束，如果在运行过程中发生异常也会提前结束。
+
+中断可以理解为线程的一个标志位，它表示了一个运行中的线程是否被其他线程进行了中断操作。中断好比其他线程对该线程打了一个招呼。其他线程可以调用该线程的interrupt()方法对其进行中断操作，同时该线程可以调用
+isInterrupted（）来感知其他线程对其自身的中断操作，从而做出响应。另外，同样可以调用Thread的静态方法
+interrupted（）<u>对当前线程进行中断操作</u>  ps: 来感知中断标志，该方法会清除中断标志位。**需要注意的是，当抛出InterruptedException时候，会清除中断标志位，也就是说在调用isInterrupted会返回false。**
 
 ## InterruptedException
 
@@ -511,6 +564,24 @@ synchronized 中的锁是非公平的，ReentrantLock 默认情况下也是非�
 当多个线程可以一起工作去解决某个问题时，如果某些部分必须在其它部分之前完成，那么就需要对线程进行协调。
 
 ## join()
+
+关于join方法一共提供如下这些方法:
+
+> public final synchronized void join(long millis)
+> public final synchronized void join(long millis, int nanos)
+> public final void join() throws InterruptedException
+
+Thread类除了提供join()方法外，另外还提供了超时等待的方法，如果线程threadB在等待的时间内还没有结束的话，threadA会在超时之后继续执行。join方法源码关键是：
+
+```
+ while (isAlive()) {
+    wait(0);
+ }
+```
+
+可以看出来当前等待对象threadA会一直阻塞，直到被等待对象threadB结束后即isAlive()返回false的时候才会结束while循环，当threadB退出时会调用notifyAll()方法通知所有的等待线程。
+
+
 
 在线程中调用另一个线程的 join() 方法，会将当前线程挂起，而不是忙等待，直到目标线程结束。
 
