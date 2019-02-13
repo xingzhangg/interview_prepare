@@ -1,5 +1,3 @@
-![](https://ws3.sinaimg.cn/large/006tKfTcly1fqrle104hwj31i6104aig.jpg)
-
 ## 前言
 
 本文接着上文[应用限流](http://crossoverjie.top/2017/08/11/sbc4/)进行讨论。

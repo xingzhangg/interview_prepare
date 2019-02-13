@@ -8,7 +8,7 @@ java.util.concurrent（J.U.C）大大提高了并发性能，AQS 被认为是 J.
 
 维护了一个计数器 cnt，每次调用 countDown() 方法会让计数器的值减 1，减到 0 的时候，那些因为调用 await() 方法而在等待的线程就会被唤醒。
 
-<div align="center"> <img src="../pics//CountdownLatch.png" width=""/> </div><br>
+<div align="center"> <img src="../pics/CountdownLatch.png" width=""/> </div><br>
 
 ```java
 public class CountdownLatchExample {
@@ -57,7 +57,7 @@ public CyclicBarrier(int parties) {
 }
 ```
 
-<div align="center"> <img src="../pics//CyclicBarrier.png" width=""/> </div><br>
+<div align="center"> <img src="../pics/CyclicBarrier.png" width=""/> </div><br>
 
 ```java
 public class CyclicBarrierExample {
@@ -90,7 +90,7 @@ before..before..before..before..before..before..before..before..before..before..
 
 Semaphore 类似于操作系统中的信号量，可以控制对互斥资源的访问线程数。
 
-<div align="center"> <img src="../pics//Semaphore.png" width=""/> </div><br>
+<div align="center"> <img src="../pics/Semaphore.png" width=""/> </div><br>
 
 以下代码模拟了对某个服务的并发请求，每次只能有 3 个客户端同时访问，请求总数为 10。
 
@@ -296,7 +296,7 @@ public class ForkJoinPool extends AbstractExecutorService
 
 ForkJoinPool 实现了工作窃取算法来提高 CPU 的利用率。每个线程都维护了一个双端队列，用来存储需要执行的任务。工作窃取算法允许空闲的线程从其它线程的双端队列中窃取一个任务来执行。窃取的任务必须是最晚的任务，避免和队列所属线程发生竞争。例如下图中，Thread2 从 Thread1 的队列中拿出最晚的 Task1 任务，Thread1 会拿出 Task2 来执行，这样就避免发生竞争。但是如果队列中只有一个任务时还是会发生竞争。
 
-<div align="center"> <img src="../pics//15b45dc6-27aa-4519-9194-f4acfa2b077f.jpg" width=""/> </div><br>
+<div align="center"> <img src="../pics/15b45dc6-27aa-4519-9194-f4acfa2b077f.jpg" width=""/> </div><br>
 
 
 

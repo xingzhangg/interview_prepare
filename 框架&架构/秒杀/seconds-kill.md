@@ -1,5 +1,3 @@
-![](https://ws2.sinaimg.cn/large/006tKfTcly1fr1z9k79lrj31kw11zwt8.jpg)
-
 ## 前言
 
 之前在 [JCSprout](https://github.com/crossoverJie/JCSprout/blob/master/MD/Spike.md) 中提到过秒杀架构的设计，这次基于其中的理论简单实现了一下。
