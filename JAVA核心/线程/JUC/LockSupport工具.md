@@ -11,7 +11,7 @@ LockSupport中的方法不多，这里将这些方法做一个总结：
 2. void park(Object blocker)：功能同方法1，入参增加一个Object对象，用来记录导致线程阻塞的阻塞对象，方便进行问题排查；
 3. void parkNanos(long nanos)：阻塞当前线程，最长不超过nanos纳秒，增加了超时返回的特性；
 4. void parkNanos(Object blocker, long nanos)：功能同方法3，入参增加一个Object对象，用来记录导致线程阻塞的阻塞对象，方便进行问题排查；
-5. void parkUntil(long deadline)：阻塞当前线程，知道deadline；
+5. void parkUntil(long deadline)：阻塞当前线程，直到deadline；
 6. void parkUntil(Object blocker, long deadline)：功能同方法5，入参增加一个Object对象，用来记录导致线程阻塞的阻塞对象，方便进行问题排查；
 
 > **唤醒线程**
@@ -38,7 +38,7 @@ void unpark(Thread thread):唤醒处于阻塞状态的指定线程
 	        at learn.LockSupportDemo.main(LockSupportDemo.java:7)
 
 
-通过分别调用这两个方法然后dump线程信息可以看出，带Object的park方法相较于无参的park方法会增加 parking to wait for  <0x048c2d18> (a java.lang.String）的信息，这种信息就类似于记录“案发现场”，有助于工程人员能够迅速发现问题解决问题。有个有意思的事情是，我们都知道如果使用synchronzed阻塞了线程dump线程时都会有阻塞对象的描述，在java 5推出LockSupport时遗漏了这一点，在java 6时进行了补充。还有一点需要需要的是：**synchronzed致使线程阻塞，线程会进入到BLOCKED状态，而调用LockSupprt方法阻塞线程会致使线程进入到WAITING状态。**
+通过分别调用这两个方法然后dump线程信息可以看出，带Object的park方法相较于无参的park方法会增加 parking to wait for  <0x048c2d18> (a java.lang.String）的信息，这种信息就类似于记录“案发现场”，有助于工程人员能够迅速发现问题解决问题。有个有意思的事情是，我们都知道如果使用synchronzed阻塞了线程dump线程时都会有阻塞对象的描述，在java 5推出LockSupport时遗漏了这一点，在java 6时进行了补充。还有一点需要注意的是：**synchronzed致使线程阻塞，线程会进入到BLOCKED状态，而调用LockSupprt方法阻塞线程会致使线程进入到WAITING状态。**
 
 # 3. 一个例子 #
 
@@ -61,3 +61,4 @@ void unpark(Thread thread):唤醒处于阻塞状态的指定线程
 	}
 
 thread线程调用LockSupport.park()致使thread阻塞，当mian线程睡眠3秒结束后通过LockSupport.unpark(thread)方法唤醒thread线程,thread线程被唤醒执行后续操作。另外，还有一点值得关注的是，**LockSupport.unpark(thread)可以指定线程对象唤醒指定的线程**。
+

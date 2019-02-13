@@ -16,7 +16,7 @@ JDK 1.6版本关键要素：
 1. segment继承了ReentrantLock充当锁的角色，为每一个segment提供了线程安全的保障；
 2. segment维护了哈希散列表的若干个桶，每个桶由HashEntry构成的链表。
 
-而到了JDK 1.8的ConcurrentHashMap就有了很大的变化，光是代码量就足足增加了很多。1.8版本舍弃了segment，并且大量使用了synchronized，以及CAS无锁操作以保证ConcurrentHashMap操作的线程安全性。至于为什么不用ReentrantLock而是Synchronzied呢？实际上，synchronzied做了很多的优化，包括偏向锁，轻量级锁，重量级锁，可以依次向上升级锁状态，但不能降级（关于synchronized可以[看这篇文章](https://juejin.im/post/5ae6dc04f265da0ba351d3ff)），因此，使用synchronized相较于ReentrantLock的性能会持平甚至在某些情况更优，具体的性能测试可以去网上查阅一些资料。另外，底层数据结构改变为采用数组+链表+红黑树的数据形式。
+而到了JDK 1.8的ConcurrentHashMap就有了很大的变化，光是代码量就足足增加了很多。**1.8版本舍弃了segment，并且大量使用了synchronized**，以及CAS无锁操作以保证ConcurrentHashMap操作的线程安全性。至于为什么不用ReentrantLock而是Synchronzied呢？实际上，synchronzied做了很多的优化，包括偏向锁，轻量级锁，重量级锁，可以依次向上升级锁状态，但不能降级（关于synchronized可以[看这篇文章](https://juejin.im/post/5ae6dc04f265da0ba351d3ff)），因此，使用synchronized相较于ReentrantLock的性能会持平甚至在某些情况更优，具体的性能测试可以去网上查阅一些资料。另外，底层数据结构改变为采用数组+链表+红黑树的数据形式。
 
 # 2.关键属性及类 #
 在了解ConcurrentHashMap的具体方法实现前，我们需要系统的来看一下几个关键的地方。
@@ -539,13 +539,13 @@ put方法的代码量有点长，我们按照上面的分解的步骤一步步�
 	                                hn = new Node<K,V>(ph, pk, pv, hn);
 	                        }
 	                       //在nextTable的i位置上插入一个链表
-                           setTabAt(nextTab, i, ln);
-                           //在nextTable的i+n的位置上插入另一个链表
-                           setTabAt(nextTab, i + n, hn);
-                           //在table的i位置上插入forwardNode节点  表示已经处理过该节点
-                           setTabAt(tab, i, fwd);
-                           //设置advance为true 返回到上面的while循环中 就可以执行i--操作
-                           advance = true;
+	                       setTabAt(nextTab, i, ln);
+	                       //在nextTable的i+n的位置上插入另一个链表
+	                       setTabAt(nextTab, i + n, hn);
+	                       //在table的i位置上插入forwardNode节点  表示已经处理过该节点
+	                       setTabAt(tab, i, fwd);
+	                       //设置advance为true 返回到上面的while循环中 就可以执行i--操作
+	                       advance = true;
 	                    }
 						//4.4 处理当前节点是TreeBin时的情况，操作和上面的类似
 	                    else if (f instanceof TreeBin) {

@@ -11,7 +11,7 @@
 
 	public CountDownLatch(int count)
 
-构造方法会传入一个整型数N，之后调用CountDownLatch的`countDown`方法会对N减一，知道N减到0的时候，当前调用`await`方法的线程继续执行。
+构造方法会传入一个整型数N，之后调用CountDownLatch的`countDown`方法会对N减一，直到N减到0的时候，当前调用`await`方法的线程继续执行。
 
 CountDownLatch的方法不是很多，将它们一个个列举出来：
 
@@ -99,17 +99,18 @@ CyclicBarrier也是一种多线程并发控制的实用工具，和CountDownLatc
 	//与上面的await方法功能基本一致，只不过这里有超时限制，阻塞等待直至到达超时时间为止
 	await(long timeout, TimeUnit unit) throws InterruptedException, 
 	BrokenBarrierException, TimeoutException 
-
+	
 	//获取当前有多少个线程阻塞等待在临界点上
 	int getNumberWaiting()
 	
 	//用于查询阻塞等待的线程是否被中断
 	boolean isBroken()
 
-		
+
+​		
 	//将屏障重置为初始状态。如果当前有线程正在临界点等待的话，将抛出BrokenBarrierException。
 	void reset()
-	
+
 另外需要注意的是，CyclicBarrier提供了这样的构造方法：
 
 	public CyclicBarrier(int parties, Runnable barrierAction)
@@ -147,7 +148,7 @@ CyclicBarrier也是一种多线程并发控制的实用工具，和CountDownLatc
 	    }
 	
 	}
-
+	
 	输出结果：
 	运动员准备进场，全场欢呼............
 	pool-1-thread-2 运动员，进场
@@ -175,3 +176,4 @@ CyclicBarrier也是一种多线程并发控制的实用工具，和CountDownLatc
 2. 调用CountDownLatch的countDown方法后，当前线程并不会阻塞，会继续往下执行；而调用CyclicBarrier的await方法，会阻塞当前线程，直到CyclicBarrier指定的线程全部都到达了指定点的时候，才能继续往下执行；
 3. CountDownLatch方法比较少，操作比较简单，而CyclicBarrier提供的方法更多，比如能够通过getNumberWaiting()，isBroken()这些方法获取当前多个线程的状态，**并且CyclicBarrier的构造方法可以传入barrierAction**，指定当所有线程都到达时执行的业务功能；
 4. CountDownLatch是不能复用的，而CyclicLatch是可以复用的。
+

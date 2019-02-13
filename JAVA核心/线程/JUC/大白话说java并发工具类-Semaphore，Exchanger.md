@@ -1,7 +1,7 @@
 
 # 1. 控制资源并发访问--Semaphore #
 
-Semaphore可以理解为**信号量**，用于控制资源能够被并发访问的线程数量，以保证多个线程能够合理的使用特定资源。Semaphore就相当于一个许可证，线程需要先通过acquire方法获取该许可证，该线程才能继续往下执行，否则只能在该方法出阻塞等待。当执行完业务功能后，需要通过`release()`方法将许可证归还，以便其他线程能够获得许可证继续执行。
+Semaphore可以理解为**信号量**，用于控制资源能够被并发访问的线程数量，以保证多个线程能够合理的使用特定资源。Semaphore就相当于一个许可证，线程需要先通过acquire方法获取该许可证，该线程才能继续往下执行，否则只能在该方法处阻塞等待。当执行完业务功能后，需要通过`release()`方法将许可证归还，以便其他线程能够获得许可证继续执行。
 
 
 Semaphore可以用于做流量控制，特别是公共资源有限的应用场景，比如数据库连接。假如有多个线程读取数据后，需要将数据保存在数据库中，而可用的最大数据库连接只有10个，这时候就需要使用Semaphore来控制能够并发访问到数据库连接资源的线程个数最多只有10个。在限制资源使用的应用场景下，Semaphore是特别合适的。
@@ -16,19 +16,19 @@ Semaphore可以用于做流量控制，特别是公共资源有限的应用场�
 	
 	//释放许可
 	void release()
-
+	
 	//释放指定个数的许可
 	void release(int permits)
 	
 	//尝试获取许可，如果能够获取成功则立即返回true，否则，则返回false
 	boolean tryAcquire()
-
+	
 	//与tryAcquire方法一致，只不过这里可以指定获取多个许可
 	boolean tryAcquire(int permits)
-
+	
 	//尝试获取许可，如果能够立即获取到或者在指定时间内能够获取到，则返回true，否则返回false
 	boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException
-
+	
 	//与上一个方法一致，只不过这里能够获取多个许可
  	boolean tryAcquire(int permits, long timeout, TimeUnit unit)
 
@@ -37,7 +37,7 @@ Semaphore可以用于做流量控制，特别是公共资源有限的应用场�
 	
 	//返回正在等待获取许可证的线程数
 	int getQueueLength()
-
+	
 	//是否有线程正在等待获取许可证
 	boolean hasQueuedThreads()
 	
@@ -82,7 +82,7 @@ Semaphore可以用于做流量控制，特别是公共资源有限的应用场�
 	
 	}
 	输出结果：
-
+	
 	pool-1-thread-1  同学准备获取笔......
 	pool-1-thread-1  同学获取到笔
 	pool-1-thread-1  填写表格ing.....
@@ -141,10 +141,10 @@ Exchanger除了一个无参的构造方法外，主要方法也很简单：
 	//当一个线程执行该方法的时候，会等待另一个线程也执行该方法，因此两个线程就都达到了同步点
 	//将数据交换给另一个线程，同时返回获取的数据
 	V exchange(V x) throws InterruptedException
-
+	
 	//同上一个方法功能基本一样，只不过这个方法同步等待的时候，增加了超时时间
 	V exchange(V x, long timeout, TimeUnit unit)
-        throws InterruptedException, TimeoutException 
+	    throws InterruptedException, TimeoutException 
 
 
 > 一个例子
@@ -182,9 +182,9 @@ Exchanger理解起来很容易，这里用一个简单的例子来看下它的�
 	
 	    }
 	}
-
+	
 	输出结果：
-
+	
 	女生慢慢的从教室你走出来......
 	男孩儿说：我其实暗恋你很久了......
 	女孩儿说：我也很喜欢你......

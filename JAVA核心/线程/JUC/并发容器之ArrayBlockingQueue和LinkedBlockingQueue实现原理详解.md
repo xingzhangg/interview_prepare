@@ -37,7 +37,7 @@ ArrayBlockingQueue的主要属性如下:
 	/** Condition for waiting puts */
 	private final Condition notFull;
 
-从源码中可以看出ArrayBlockingQueue内部是采用数组进行数据存储的（`属性items`），为了保证线程安全，采用的是`ReentrantLock lock`，为了保证可阻塞式的插入删除数据利用的是Condition，当获取数据的消费者线程被阻塞时会将该线程放置到notEmpty等待队列中，当插入数据的生产者线程被阻塞时，会将该线程放置到notFull等待队列中。而notEmpty和notFull等中要属性在构造方法中进行创建：
+从源码中可以看出ArrayBlockingQueue内部是采用数组进行数据存储的（`属性items`），为了保证线程安全，采用的是`ReentrantLock lock`，为了保证可阻塞式的插入删除数据利用的是Condition，**当获取数据的消费者线程被阻塞时会将该线程放置到notEmpty等待队列中，当插入数据的生产者线程被阻塞时，会将该线程放置到notFull等待队列中**。而notEmpty和notFull等中要属性在构造方法中进行创建：
 
 	public ArrayBlockingQueue(int capacity, boolean fair) {
 	    if (capacity <= 0)
@@ -262,4 +262,5 @@ take方法的主要逻辑请见于注释，也很容易理解。
 **相同点**：ArrayBlockingQueue和LinkedBlockingQueue都是通过condition通知机制来实现可阻塞式插入和删除元素，并满足线程安全的特性；
 
 **不同点**：1. ArrayBlockingQueue底层是采用的数组进行实现，而LinkedBlockingQueue则是采用链表数据结构；
+
 2.  ArrayBlockingQueue插入和删除数据，只采用了一个lock，而LinkedBlockingQueue则是在插入和删除分别采用了`putLock`和`takeLock`，这样可以降低线程由于线程无法获取到lock而进入WAITING状态的可能性，从而提高了线程并发执行的效率。
