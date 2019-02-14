@@ -1,4 +1,4 @@
-![](https://ws1.sinaimg.cn/large/006tKfTcgy1ftpwh3a2szj31kw11xh84.jpg)
+
 
 ## 前言
 
@@ -19,6 +19,8 @@
 谈到线程池就会想到池化技术，其中最核心的思想就是把宝贵的资源放到一个池子中；每次使用都从里面获取，用完之后又放回池子供其他人使用，有点吃大锅饭的意思。
 
 那在 Java 中又是如何实现的呢？
+
+### 线程池创建及参数含义
 
 在 JDK 1.5 之后推出了相关的 api，常见的创建线程池方式有以下几种：
 
@@ -44,16 +46,27 @@
 首先是创建线程的 api：
 
 ```java
-ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) 
+ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler)
 ```
 
-这几个核心参数的作用：
-
-- `corePoolSize` 为线程池的基本大小。
-- `maximumPoolSize` 为线程池最大线程大小。
-- `keepAliveTime` 和 `unit` 则是线程空闲后的存活时间。
-- `workQueue` 用于存放任务的阻塞队列。
-- `handler` 当队列和最大线程池都满了之后的饱和策略。
+- 下面对参数进行说明：
+  1. corePoolSize：表示核心线程池的大小。当提交一个任务时，如果当前核心线程池的线程个数没有达到corePoolSize，则会创建新的线程来执行所提交的任务，**即使当前核心线程池有空闲的线程**。如果当前核心线程池的线程个数已经达到了corePoolSize，则不再重新创建线程。如果调用了`prestartCoreThread()`或者 `prestartAllCoreThreads()`，线程池创建的时候所有的核心线程都会被创建并且启动。
+  2. maximumPoolSize：表示线程池能创建线程的最大个数。如果当阻塞队列已满时，并且当前线程池线程个数没有超过maximumPoolSize的话，就会创建新的线程来执行任务。
+  3. keepAliveTime：空闲线程存活时间。如果当前线程池的线程个数已经超过了corePoolSize，并且线程空闲时间超过了keepAliveTime的话，就会将这些空闲线程销毁，这样可以尽可能降低系统资源消耗。
+  4. unit：时间单位。为keepAliveTime指定时间单位。
+  5. workQueue：阻塞队列。用于保存任务的阻塞队列，关于阻塞队列[可以看这篇文章](https://juejin.im/post/5aeebd02518825672f19c546)。可以使用**ArrayBlockingQueue, LinkedBlockingQueue, SynchronousQueue, PriorityBlockingQueue**。
+  6. threadFactory：创建线程的工程类。可以通过指定线程工厂为每个创建出来的线程设置更有意义的名字，如果出现并发问题，也方便查找问题原因。
+  7. handler：饱和策略。当线程池的阻塞队列已满和指定的线程都已经开启，说明当前线程池已经处于饱和状态了，那么就需要采用一种策略来处理这种情况。采用的策略有这几种：
+     1. AbortPolicy： 直接拒绝所提交的任务，并抛出**RejectedExecutionException**异常；
+     2. CallerRunsPolicy：只用调用者所在的线程来执行任务；
+     3. DiscardPolicy：不处理直接丢弃掉任务；
+     4. DiscardOldestPolicy：丢弃掉阻塞队列中存放时间最久的任务，执行当前任务
 
 了解了这几个参数再来看看实际的运用。
 
@@ -79,6 +92,8 @@ threadPool.execute(new Job());
 
 ![](https://ws4.sinaimg.cn/large/006tKfTcgy1ftq2nxlwe5j30sp0ba0ts.jpg)
 
+### 线程池工作原理
+
 然后看看 `execute()` 方法是如何处理的：
 
 ![](https://ws1.sinaimg.cn/large/006tKfTcgy1ftq283zi91j30ky08mwgb.jpg)
@@ -90,9 +105,7 @@ threadPool.execute(new Job());
 5. 如果当前线程池为空就新创建一个线程并执行。
 6. 如果在第三步的判断为非运行状态，尝试新建线程，如果失败则执行拒绝策略。
 
-这里借助《聊聊并发》的一张图来描述这个流程：
-
-![](https://ws4.sinaimg.cn/large/006tKfTcgy1ftq2vzuv5rj30dw085q3i.jpg)
+![线程池执行流程图.jpg](https://upload-images.jianshu.io/upload_images/2615789-2d3eb90c8e2cf51f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 ### 如何配置线程
@@ -117,8 +130,8 @@ threadPool.execute(new Job());
 
 但他们有着重要的区别：
 
-- `shutdown()` 执行后停止接受新任务，会把队列的任务执行完毕。
-- `shutdownNow()` 也是停止接受新任务，但会中断所有的任务，将线程池状态变为 stop。
+- `shutdown()` 只是将线程池的状态设置为**SHUTDOWN**状态，然后中断所有没有正在执行任务的线程
+- `shutdownNow()` 首先将线程池的状态设置为**STOP**,然后尝试**停止所有的正在执行和未执行任务**的线程，并返回等待执行任务的列表；
 
 > 两个方法都会中断线程，用户可自行判断是否需要响应中断。
 
@@ -403,10 +416,5 @@ public class CommandUser extends HystrixCommand<String> {
 
 > 自定义的 Command 并不是一个单例，每次执行需要 new 一个实例，不然会报 ` This instance can only be executed once. Please instantiate a new instance.` 异常。
 
-## 总结
+https://github.com/crossoverJie/Java-Interview/tree/master/src/main/java/com/crossoverjie/hystrix)
 
-池化技术确实在平时应用广泛，熟练掌握能提高不少效率。
-
-文末的 hystrix 源码：
-
-[https://github.com/crossoverJie/Java-Interview/tree/master/src/main/java/com/crossoverjie/hystrix](https://github.com/crossoverJie/Java-Interview/tree/master/src/main/java/com/crossoverjie/hystrix)

@@ -177,69 +177,7 @@ other task is running...
 4950
 ```
 
-## BlockingQueue
 
-java.util.concurrent.BlockingQueue 接口有以下阻塞队列的实现：
-
-- **FIFO 队列** ：LinkedBlockingQueue、ArrayBlockingQueue（固定长度）
-- **优先级队列** ：PriorityBlockingQueue
-
-提供了阻塞的 take() 和 put() 方法：如果队列为空 take() 将阻塞，直到队列中有内容；如果队列为满 put() 将阻塞，直到队列有空闲位置。
-
-**使用 BlockingQueue 实现生产者消费者问题** 
-
-```java
-public class ProducerConsumer {
-
-    private static BlockingQueue<String> queue = new ArrayBlockingQueue<>(5);
-
-    private static class Producer extends Thread {
-        @Override
-        public void run() {
-            try {
-                queue.put("product");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.print("produce..");
-        }
-    }
-
-    private static class Consumer extends Thread {
-
-        @Override
-        public void run() {
-            try {
-                String product = queue.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.print("consume..");
-        }
-    }
-}
-```
-
-```java
-public static void main(String[] args) {
-    for (int i = 0; i < 2; i++) {
-        Producer producer = new Producer();
-        producer.start();
-    }
-    for (int i = 0; i < 5; i++) {
-        Consumer consumer = new Consumer();
-        consumer.start();
-    }
-    for (int i = 0; i < 3; i++) {
-        Producer producer = new Producer();
-        producer.start();
-    }
-}
-```
-
-```html
-produce..produce..consume..consume..produce..consume..produce..consume..produce..consume..
-```
 
 ## ForkJoin
 
@@ -300,67 +238,6 @@ ForkJoinPool 实现了工作窃取算法来提高 CPU 的利用率。每个线�
 
 
 
-
-
-AQS:
-----------Node:
-
-        /** waitStatus value to indicate thread has cancelled */
-        static final int CANCELLED =  1;
-        /** waitStatus value to indicate successor's thread needs unparking */
-        static final int SIGNAL    = -1;
-        /** waitStatus value to indicate thread is waiting on condition */
-        static final int CONDITION = -2;
-        /**
-         * waitStatus value to indicate the next acquireShared should
-         * unconditionally propagate
-         */
-        static final int PROPAGATE = -3;
-    
-        /**
-         * Status field, taking on only the values:
-         *   SIGNAL:     The successor of this node is (or will soon be)
-         *               blocked (via park), so the current node must
-         *               unpark its successor when it releases or
-         *               cancels. To avoid races, acquire methods must
-         *               first indicate they need a signal,
-         *               then retry the atomic acquire, and then,
-         *               on failure, block.
-         *   CANCELLED:  This node is cancelled due to timeout or interrupt.
-         *               Nodes never leave this state. In particular,
-         *               a thread with cancelled node never again blocks.
-         *   CONDITION:  This node is currently on a condition queue.
-         *               It will not be used as a sync queue node
-         *               until transferred, at which time the status
-         *               will be set to 0. (Use of this value here has
-         *               nothing to do with the other uses of the
-         *               field, but simplifies mechanics.)
-         *   PROPAGATE:  A releaseShared should be propagated to other
-         *               nodes. This is set (for head node only) in
-         *               doReleaseShared to ensure propagation
-         *               continues, even if other operations have
-         *               since intervened.
-         *   0:          None of the above
-         *
-         * The values are arranged numerically to simplify use.
-         * Non-negative values mean that a node doesn't need to
-         * signal. So, most code doesn't need to check for particular
-         * values, just for sign.
-         *
-         * The field is initialized to 0 for normal sync nodes, and
-         * CONDITION for condition nodes.  It is modified using CAS
-         * (or when possible, unconditional volatile writes).
-         */
-        volatile int waitStatus;
-
-----------ConditionObject:
-		/** First node of condition queue. */
-        private transient Node firstWaiter;
-        /** Last node of condition queue. */
-        private transient Node lastWaiter;
-
-
-
 FutureTask:
 
 
@@ -389,13 +266,11 @@ FutureTask:
     private static final int INTERRUPTING = 5;
     private static final int INTERRUPTED  = 6;
 
-
 Executors:
 newFixedThreadPool --->  LinkedBlockingQueue
 newSingleThreadExecutor  ---> LinkedBlockingQueue
-newCachedThreadPool  ---> LinkedBlockingQueue
-newScheduledThreadPool  ---> LinkedBlockingQueue
-
+newCachedThreadPool  ---> SynchronousQueue
+newScheduledThreadPool  ---> DelayedWorkQueue
 
 ThreadPoolExecutor：执行逻辑
 execute()
