@@ -1,5 +1,3 @@
-![](https://ws1.sinaimg.cn/large/006tNc79gy1fq3fey7n97j31340o8myw.jpg)
-
 ## 前言
 LRU 是 `Least Recently Used` 的简写，字面意思则是`最近最少使用`。
 

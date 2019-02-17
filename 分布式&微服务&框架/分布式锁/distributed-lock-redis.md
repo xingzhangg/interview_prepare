@@ -50,9 +50,9 @@ String set(String key, String value, String nxxx, String expx, long time);
 
 api。
 
-该命令可以保证 NX EX 的原子性。
+**该命令可以保证 NX EX 的原子性。**
 
-一定不要把两个命令(NX EX)分开执行，如果在 NX 之后程序出现问题就有可能产生死锁。
+**一定不要把两个命令(NX EX)分开执行，如果在 NX 之后程序出现问题就有可能产生死锁。**
 
 #### 阻塞锁
 同时也可以实现一个阻塞锁：

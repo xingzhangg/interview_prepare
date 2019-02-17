@@ -125,16 +125,7 @@
     1. FindUsage、Go To Declaration 等等就不再多说了。
     1. 目前想到的就这么多，如果你发现了我没有提到的功能，欢迎跟我邮件交流～
 
-## At last
 
-博客在 CentOS 7 下编辑，这个平台的中文输入法没有搜狗用的爽，文中出现的错别字的概率可能会大一点，如果影响到了理解内容，请给我提 Issue，我会尽快修订～
-
-博客持续更新，欢迎 `Star` & `watch`。
-
-**PS： 马上大四了，正在准备校招，如果各位大佬觉得博客写的还行的话，请砸面试机会给我。谢谢～**
-
-- 邮箱： rainstorm.me@outlook.com
-- 简历： https://github.com/c-rainstorm/Resume
 
 ## Reference
 

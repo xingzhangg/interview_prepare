@@ -88,7 +88,7 @@ map.put("K3", "V3");
 - 计算键值对所在的桶；
 - 在链表上顺序查找，时间复杂度显然和链表的长度成正比。
 
-<div align="center"> <img src="../../pics//49d6de7b-0d0d-425c-9e49-a1559dc23b10.png" width="600"/> </div><br>
+<div align="center"> <img src="../../pics/49d6de7b-0d0d-425c-9e49-a1559dc23b10.png" width="600"/> </div><br>
 
 ### 3. put 操作
 
@@ -426,7 +426,7 @@ final Segment<K,V>[] segments;
 static final int DEFAULT_CONCURRENCY_LEVEL = 16;
 ```
 
-<div align="center"> <img src="../../pics//3fdfc89d-719e-4d93-b518-29fa612b3b18.png"/> </div><br>
+<div align="center"> <img src="../../pics/3fdfc89d-719e-4d93-b518-29fa612b3b18.png"/> </div><br>
 
 ### 2. size 操作
 

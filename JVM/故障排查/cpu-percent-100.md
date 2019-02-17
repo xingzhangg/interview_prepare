@@ -1,10 +1,6 @@
 
 
-![](https://ws3.sinaimg.cn/large/006tNbRwly1fy67gauqxyj31eg0u0gun.jpg)
-
 # 前言
-
-到了年底果然都不太平，最近又收到了运维报警：表示有些服务器负载非常高，让我们定位问题。
 
 还真是想什么来什么，前些天还故意把某些服务器的负载提高（[没错，老板让我写个 BUG！](https://crossoverjie.top/2018/12/12/java-senior/java-memary-allocation/)），不过还好是不同的环境互相没有影响。
 

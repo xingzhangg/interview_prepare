@@ -90,18 +90,7 @@
     1. `createFilterChain()` 方法会从 `StandardContext` 中获取到所有的过滤器，然后将匹配 Request URL 的所有过滤器挑选出来添加到 `filterChain` 中。
     1. `doFilter()` 执行过滤链,当所有的过滤器都执行完毕后调用 Servlet 的 `service()` 方法。
 
-## At last
 
-博客在 CentOS 7 下编辑，这个平台的中文输入法没有搜狗用的爽，文中出现的错别字的概率可能会大一点，如果影响到了理解内容，请给我提 Issue，我会尽快修订～
-
-博客持续更新，欢迎 `Star` & `watch`。
-
-**PS： 马上大四了，正在准备校招，如果各位大佬觉得博客写的还行的话，请砸面试机会给我。谢谢～**
-
-- 邮箱： rainstorm.me@outlook.com
-- 简历： https://github.com/c-rainstorm/Resume
-
-**另：非常感谢 [DaoCloud](https://www.daocloud.io/) 公司提供的面试机会！**
 
 # Reference
 

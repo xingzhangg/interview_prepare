@@ -1,7 +1,5 @@
 
 
-![](https://ws1.sinaimg.cn/large/006tNbRwly1fwztw0m8okj31hc0u0tbz.jpg)
-
 # 背景
 
 上午刚到公司，准备开始一天的摸鱼之旅时突然收到了一封监控中心的邮件。
