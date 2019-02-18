@@ -1,6 +1,6 @@
 # 设计一个秒杀系统
 
-**具体实现参考 [秒杀架构实践](architecture-design/seconds-kill.md)**
+**具体实现参考 [秒杀架构实践](seconds-kill.md)**
 
 主要做到以下两点:
 
