@@ -137,12 +137,3 @@
 创建线程池的方式也是核心线程数、最大线程数是一样的，导致一些空闲的线程也得不到回收；这样会有很多无意义的资源消耗。
 
 所以也会结合业务将创建线程池的方式调整一下，将线程数降下来，尽量的物尽其用。
-
-
-本文的演示代码已上传至 GitHub：
-
-[https://github.com/crossoverJie/JCSprout](https://github.com/crossoverJie/JCSprout/tree/master/src/main/java/com/crossoverjie/disruptor)
-
-**你的点赞与分享是对我最大的支持**
-
-![](https://ws2.sinaimg.cn/large/006tNbRwly1fyrjtr3ja2j30760760t7.jpg)

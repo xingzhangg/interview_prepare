@@ -1,9 +1,6 @@
 
 # 从源码分析如何优雅的使用 Kafka 生产者
 
-
-![](https://ws2.sinaimg.cn/large/006tNbRwgy1fw2g4pw7ooj31kw11xwjh.jpg)
-
 # 前言
 
 在上文 [设计一个百万级的消息推送系统](https://crossoverjie.top/2018/09/25/netty/million-sms-push/) 中提到消息流转采用的是 `Kafka` 作为中间件。
@@ -308,16 +305,5 @@ producer 不会等待副本的任何响应，这样最容易丢失消息但同�
 所以使用哪一个得视情况而定。
 
 
-# 总结
 
-本文内容较多，从实例和源码的角度分析了 Kafka 生产者。
-
-希望看完的朋友能有收获，同时也欢迎留言讨论。
-
-不出意外下期会讨论 Kafka 消费者。
-
-> 如果对你有帮助还请分享让更多的人看到。
-
-**欢迎关注公众号一起交流：**
-
-<img src="https://ws2.sinaimg.cn/large/006tKfTcly1fsa01u7ro1j30gs0howfq.jpg" width="300"/> 
+ 

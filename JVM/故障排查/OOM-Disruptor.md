@@ -1,5 +1,3 @@
-![](https://ws2.sinaimg.cn/large/0069RVTdgy1fupvtq0tf1j31kw11x1ab.jpg)
-
 # 前言
 
 `OutOfMemoryError` 问题相信很多朋友都遇到过，相对于常见的业务异常（数组越界、空指针等）来说这类问题是很难定位和解决的。
@@ -117,9 +115,3 @@
 也会让大部分觉得 JVM 这样的黑盒难以下手的同学有一个直观的感受。
 
 `同时也得感叹 Disruptor 东西虽好，也不能乱用哦！`
-
-相关演示代码查看：
-
-[https://github.com/crossoverJie/JCSprout/tree/master/src/main/java/com/crossoverjie/disruptor](https://github.com/crossoverJie/JCSprout/tree/master/src/main/java/com/crossoverjie/disruptor)
-
-**你的点赞与转发是最大的支持。**
