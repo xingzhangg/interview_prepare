@@ -270,7 +270,7 @@ MySQL 提供了 FROM_UNIXTIME() 函数把 UNIX 时间戳转换为日期，并提
 
 当一个表的数据不断增多时，Sharding 是必然的选择，它可以将数据分布到集群的不同节点上，从而缓存单个数据库的压力。
 
-<div align="center"> <img src="./pics//63c2909f-0c5f-496f-9fe5-ee9176b31aba.jpg"/> </div><br>
+<div align="center"> <img src="./pics/63c2909f-0c5f-496f-9fe5-ee9176b31aba.jpg"/> </div><br>
 
 ## 垂直切分
 
@@ -278,7 +278,7 @@ MySQL 提供了 FROM_UNIXTIME() 函数把 UNIX 时间戳转换为日期，并提
 
 在数据库的层面使用垂直切分将按数据库中表的密集程度部署到不同的库中，例如将原来的电商数据库垂直切分成商品数据库、用户数据库等。
 
-<div align="center"> <img src="./pics//e130e5b8-b19a-4f1e-b860-223040525cf6.jpg"/> </div><br>
+<div align="center"> <img src="./pics/e130e5b8-b19a-4f1e-b860-223040525cf6.jpg"/> </div><br>
 
 ## Sharding 策略
 
@@ -312,7 +312,7 @@ MySQL 提供了 FROM_UNIXTIME() 函数把 UNIX 时间戳转换为日期，并提
 -  **I/O 线程** ：负责从主服务器上读取二进制日志，并写入从服务器的重放日志（Replay log）中。
 -  **SQL 线程** ：负责读取重放日志并重放其中的 SQL 语句。
 
-<div align="center"> <img src="./pics//master-slave.png"/> </div><br>
+<div align="center"> <img src="./pics/master-slave.png"/> </div><br>
 
 ## 读写分离
 
@@ -326,7 +326,7 @@ MySQL 提供了 FROM_UNIXTIME() 函数把 UNIX 时间戳转换为日期，并提
 
 读写分离常用代理方式来实现，代理服务器接收应用层传来的读写请求，然后决定转发到哪个服务器。
 
-<div align="center"> <img src="./pics//master-slave-proxy.png"/> </div><br>
+<div align="center"> <img src="./pics/master-slave-proxy.png"/> </div><br>
 
 # 参考资料
 

@@ -7,3 +7,5 @@
 ### [读写分离](https://github.com/doocs/advanced-java)
 - **[如何实现 MySQL 的读写分离？MySQL 主从复制原理是啥？如何解决 MySQL 主从同步的延时问题？]**
 
+http://hedengcheng.com/?p=771
+
