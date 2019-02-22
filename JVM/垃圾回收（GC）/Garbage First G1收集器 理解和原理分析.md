@@ -1,15 +1,11 @@
 # G1简介
 
-转自： https://liuzhengyang.github.io/2017/06/07/garbage-first-collector/
-
 Garbage First Collector, 简称G1 Collector，是HotspotJDK1.7后提供的面向大内存(Heap区数G到数10G)、多核系统的收集器，能够实现软停顿目标收集并且具有高吞吐量, 具有更可预测的停顿时间。一些基本的垃圾收集的概念和术语可以参考我之前的一篇[理解GC(垃圾回收算法和原理)](https://liuzhengyang.github.io/2017/04/01/understandinggarbagecollect/)。
 
 G1是一种并发、并行、部分Stop The World、使用Copying算法收集的分代的增量式收集器，
 G1的全堆的操作，像global marking，是和应用(mutator)并发执行的，这样可以减少对mutator的暂停时间。清除阶段则使用多线程来提高吞吐量。
 与Hotspot之前的Serial、Parallel、CMS等收集器不同的是，G1将堆分为很多大小相等的Region, 每次收集时会判断各个Region的活性-即垃圾对象的占比，垃圾对象占比越多的Region回收的收益越大，然后G1会按照设置的停顿时间目标、前几次回收Region所用时间来估算要回收哪些Region,即用最小的时间获取最大的收益，这也是Garbage First名字的含义。
 Garbage First Collector的使命是在未来替换CMS，并且在JDK1.9已经成为默认的收集器。
-
-
 
 
 
@@ -325,3 +321,7 @@ Heap after GC invocations=1 (full 0):
 5.920: [G1Ergonomics (Mixed GCs) do not continue mixed GCs, reason: reclaimable percentage not over threshold, candidate old regions: 17 regions, reclaimable: 6121168 bytes (4.71 %), threshold: 5.00 %]
 , 0.0069783 secs]
 ```
+
+## 参考资料
+
+- https://liuzhengyang.github.io/2017/06/07/garbage-first-collector/

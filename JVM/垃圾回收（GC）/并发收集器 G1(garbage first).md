@@ -20,7 +20,7 @@ G1 GC，全称Garbage-First Garbage Collector，通过-XX:+UseG1GC参数来启�
 
 * 像CMS收集器一样，能与应用程序线程并发执行。 
 *  整理空闲空间更快。
-*   需要GC停顿时间更好预测。ff
+*   需要GC停顿时间更好预测。
 *   不希望牺牲大量的吞吐性能。 
 *  不需要更大的Java Heap。
 
@@ -30,7 +30,7 @@ G1收集器的设计目标是取代CMS收集器，它同CMS相比，在以下方
 
 * G1的Stop The World(STW)更可控，G1在停顿时间上添加了预测机制，用户可以指定期望停顿时间。
 
-v有了以上的特性，难怪有人说它是一款驾驭一切的垃圾收集器（[G1: One Garbage Collector To Rule Them All](http://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All)）。本文带大家来了解一下G1 GC的一些关键技术，为能正确的使用它，做好理论基础的铺垫。
+有了以上的特性，难怪有人说它是一款驾驭一切的垃圾收集器（[G1: One Garbage Collector To Rule Them All](http://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All)）。本文带大家来了解一下G1 GC的一些关键技术，为能正确的使用它，做好理论基础的铺垫。
 
 ## G1中几个重要概念
 

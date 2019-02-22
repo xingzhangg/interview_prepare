@@ -1,13 +1,17 @@
 ## 1.总体介绍：
 
-CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得最短回收停顿时间的垃圾回收器。对于要求服务器响应速度的应用上，这种垃圾回收器非常适合。**CMS是用于对tenured generation的回收，也就是年老代的回收**，目标是尽量减少应用的暂停时间，减少full gc发生的几率，利用和应用程序线程并发的垃圾回收线程来标记清除年老代。在启动JVM参数加上-XX:+UseConcMarkSweepGC ，这个参数表示对于老年代的回收采用CMS。CMS采用的基础算法是：标记—清除。
+CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得最短回收停顿时间的垃圾回收器。对于响应时间的重要性需求 大于对吞吐量的要求，能够承受垃圾回收线程和应用线程共享处理器资源，并且应用中存在比较多的长生命周期的对象的应用这种垃圾回收器非常适合。
+
+**CMS是用于对tenured generation的回收，也就是年老代的回收**，目标是尽量减少应用的暂停时间，减少full gc发生的几率，利用和应用程序线程并发的垃圾回收线程来标记清除年老代。
+
+在启动JVM参数加上**-XX:+UseConcMarkSweepGC** ，这个参数表示对于老年代的回收采用CMS。CMS采用的基础算法是：标记—清除。
 
 ## 2.CMS过程：
 
 - 初始标记(STW initial mark) ***暂停应用 
 - 并发标记(Concurrent marking)
-- 并发预清理(Concurrent precleaning)
-- 重新标记(STW remark) *** 暂停 应用
+- 并发预清理(Concurrent precleaning) 
+- 重新标记(STW remark) *** 暂停应用
 - 并发清理(Concurrent sweeping)
 - 并发重置(Concurrent reset)
 
@@ -17,7 +21,7 @@ CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得最短回收停
 
 **并发预清理** ：并发预清理阶段仍然是并发的。在这个阶段，虚拟机查找在执行并发标记阶段新进入老年代的对象(可能会有一些对象从新生代晋升到老年代， 或者有一些对象被分配到老年代)。通过重新扫描，减少下一个阶段"重新标记"的工作，因为下一个阶段会Stop The World。
 
-**重新标记** ：这个阶段会暂停虚拟机，收集器线程扫描在CMS堆中剩余的对象。扫描从"跟对象"开始向下追溯，并处理对象关联。
+**重新标记** ：这个阶段会暂停虚拟机，收集器线程扫描在CMS堆中剩余的对象。扫描从"根对象"开始向下追溯，并处理对象关联。
 
 **并发清理** ：清理垃圾对象，这个阶段收集器线程和应用程序线程并发执行。
 
@@ -38,40 +42,35 @@ CSM执行过程：
 
 总得来说，CMS回收器减少了回收的停顿时间，但是降低了堆空间的利用率。
 
-## 4.啥时候用CMS
+## 4.什么情况使用CMS
 
 如果你的应用程序对停顿比较敏感，并且在应用程序运行的时候可以提供更大的内存和更多的CPU(也就是硬件牛逼)，那么使用CMS来收集会给你带来好处。还有，如果在JVM中，有相对较多存活时间较长的对象(老年代比较大)会更适合使用CMS。
 
 
 
-=================================================================
+## 5.参数介绍和总结
+
+**-XX:+UseConcMarkSweepGC**:  启用CMS 
+
+**-XX:ParallelCMSThreads=20**: CMS默认启动的回收线程数目是  (ParallelGCThreads + 3)/4) ，其中ParallelGCThreads是年轻代的并行收集线程数,如果你需要明确设定，可以通此参数来设定。
+
+**-XX:+UseCMSCompactAtFullCollection**:  CMS是不会整理堆碎片的，因此为了防止堆碎片引起full gc，通过会开启CMS阶段进行合并碎片选项,开启这个选项一定程度上会影响性能，阿宝的blog里说也许可以通过配置适当的CMSFullGCsBeforeCompaction来调整性能，未实践。
+
+**-XX:CMSFullGCBeforeCompaction=5**: 结合参数-XX:+UseCMSCompactAtFullCollection， 也就是CMS在进行5次Full GC（标记清除）之后进行一次标记整理算法，从而可以控制老年代的碎片在一定的数量以内，甚至可以配置CMS在每次Full GC的时候都进行内存的整理。
+
+**-XX:+CMSParallelRemarkEnabled:** 为了减少第二次暂停的时间，开启并行remark。如果remark还是过长的话，可以开启**-XX:+CMSScavengeBeforeRemark**选项，强制remark之前开始一次minor gc，减少remark的暂停时间，但是在remark之后也将立即开始又一次minor gc。
+
+**-XX:+CMSPermGenSweepingEnabled**: 为了避免Perm区满引起的full gc，建议开启CMS回收Perm区选项。
+
+**-XX:+CMSClassUnloadingEnabled**: 为了避免Perm区满引起的full gc，建议开启CMS回收Perm区选项,同上一个参数。
+
+**-XX:CMSInitiatingOccupancyFraction=80**: 默认CMS是在tenured generation沾满68%的时候开始进行CMS收集，如果你的年老代增长不是那么快，并且希望降低CMS次数的话，可以适当调高此值。
+
+**-XX:ParallelGCThreads=N**: 年轻代的并行收集线程数默认是(cpu <= 8) ? cpu : 3 + ((cpu * 5) / 8)，如果你希望降低这个线程数，可以通过此参数来调整。
 
 
 
-下面是参数介绍和遇到的问题总结，
-
-1、启用CMS：**-XX:+UseConcMarkSweepGC**。 
-
- 
-
-2。CMS默认启动的回收线程数目是  (ParallelGCThreads + 3)/4) ，如果你需要明确设定，可以通过**-XX:ParallelCMSThreads**=20来设定,其中ParallelGCThreads是年轻代的并行收集线程数
-
-
-3、CMS是不会整理堆碎片的，因此为了防止堆碎片引起full gc，通过会开启CMS阶段进行合并碎片选项：**-XX:+UseCMSCompactAtFullCollection**，开启这个选项一定程度上会影响性能，阿宝的blog里说也许可以通过配置适当的CMSFullGCsBeforeCompaction来调整性能，未实践。
-
-4.为了减少第二次暂停的时间，开启并行remark: **-XX:+CMSParallelRemarkEnabled**。如果remark还是过长的话，可以开启**-XX:+CMSScavengeBeforeRemark**选项，强制remark之前开始一次minor gc，减少remark的暂停时间，但是在remark之后也将立即开始又一次minor gc。
-
-5.为了避免Perm区满引起的full gc，建议开启CMS回收Perm区选项：
-**+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled**
-
-6.默认CMS是在tenured generation沾满68%的时候开始进行CMS收集，如果你的年老代增长不是那么快，并且希望降低CMS次数的话，可以适当调高此值：
-**-XX:CMSInitiatingOccupancyFraction=80**
-
-这里修改成80%沾满的时候才开始CMS回收。
-
-7.年轻代的并行收集线程数默认是(cpu <= 8) ? cpu : 3 + ((cpu * 5) / 8)，如果你希望降低这个线程数，可以通过**-XX:ParallelGCThreads=** N 来调整。
-
-8.进入重点，在初步设置了一些参数后，例如：
+进入重点，在初步设置了一些参数后，例如：
 
  ```
 1. -server -Xms1536m -Xmx1536m -XX:NewSize=256m -XX:MaxNewSize=256m -XX:PermSize=64m  
@@ -105,15 +104,63 @@ CSM执行过程：
 
 其中可以看到CMS-initial-mark阶段暂停了0.0303050秒，而CMS-remark阶段暂停了0.0932010秒，因此两次暂停的总共时间是0.123506秒，也就是123毫秒左右。两次短暂停的时间之和在200以下可以称为正常现象。
 
-但是你很可能遇到**两种fail引起full gc**：Prommotion failed和Concurrent mode failed。
+但是你很可能遇到**两种fail引起full gc**：Promotion failed和Concurrent mode failed。
 
-Prommotion failed的日志输出大概是这样：
+## 6.**Promotion failed**
+
+的日志输出大概是这样：
 
 ```
 1. [ParNew (promotion failed): 320138K->320138K(353920K), 0.2365970 secs]42576.951: [CMS: 1139969K->1120688K(  
 2. 166784K), 9.2214860 secs] 1458785K->1120688K(2520704K), 9.4584090 secs]  
 ```
 
-这个问题的产生是由于救助空间不够，从而向年老代转移对象，年老代没有足够的空间来容纳这些对象，导致一次full gc的产生。解决这个问题的办法有两种完全相反的倾向：**增大救助空间、增大年老代或者去掉救助空间**。 增大救助空间就是调整-XX:SurvivorRatio参数，这个参数是Eden区和Survivor区的大小比值，默认是32，也就是说Eden区是 Survivor区的32倍大小，要注意Survivo是有两个区的，因此Surivivor其实占整个young genertation的1/34。调小这个参数将增大survivor区，让对象尽量在survitor区呆长一点，减少进入年老代的对象。去掉救助空 间的想法是让大部分不能马上回收的数据尽快进入年老代，加快年老代的回收频率，减少年老代暴涨的可能性，这个是通过将-XX:SurvivorRatio 设置成比较大的值（比如65536)来做到。在我们的应用中，将young generation设置成256M，这个值相对来说比较大了，而救助空间设置成默认大小(1/34)，从压测情况来看，没有出现prommotion failed的现象，年轻代比较大，从GC日志来看，minor gc的时间也在5-20毫秒内，还可以接受，因此暂不调整。
+该问题是在进行Minor GC时，Survivor Space放不下，对象只能放入老年代，而此时老年代也放不下造成的，导致一次full gc的产生。
 
-Concurrent mode failed的产生是由于CMS回收年老代的速度太慢，导致年老代在CMS完成前就被沾满，引起full gc，避免这个现象的产生就是调小**-XX:CMSInitiatingOccupancyFraction**参数的值，让CMS更早更频繁的触发，降低年老代被沾满的可能。我们的应用暂时负载比较低，在生产环境上年老代的增长非常缓慢，因此暂时设置此参数为80。在压测环境下，这个参数的表现还可以，没有出现过Concurrent mode failed。
+解决这个问题的办法有两种完全相反的倾向：
+
+* 增大救助空间、增大年老代或者去掉救助空间。 增大救助空间就是调整**-XX:SurvivorRatio**参数，这个参数是Eden区和Survivor区的大小比值，默认是32，也就是说Eden区是 Survivor区的32倍大小，要注意Survivo是有两个区的，因此Surivivor其实占整个young genertation的1/34。
+
+* 调小这个参数将增大survivor区，让对象尽量在survitor区呆长一点，减少进入年老代的对象。去掉救助空 间的想法是让大部分不能马上回收的数据尽快进入年老代，加快年老代的回收频率，减少年老代暴涨的可能性，这个是通过将-XX:SurvivorRatio 设置成比较大的值（比如65536)来做到。在我们的应用中，将young generation设置成256M，这个值相对来说比较大了，而救助空间设置成默认大小(1/34)，从压测情况来看，没有出现promotion failed的现象，年轻代比较大，从GC日志来看，minor gc的时间也在5-20毫秒内，还可以接受，因此暂不调整。
+
+* 解决这个问题的办法就是可以让CMS在进行一定次数的Full GC（标记清除）的时候进行一次标记整理算法，CMS提供了以下参数来控制：
+
+  -XX:UseCMSCompactAtFullCollection -XX:CMSFullGCBeforeCompaction=5
+   也就是CMS在进行5次Full GC（标记清除）之后进行一次标记整理算法，从而可以控制老年代的碎片在一定的数量以内，甚至可以配置CMS在每次Full GC的时候都进行内存的整理。
+
+  
+
+## **7.Concurrent mode failed**
+
+日志大概是这样的：
+
+```
+0.195: [GC 0.195: [ParNew: 2986K->2986K(8128K), 0.0000083 secs]0.195: [CMS0.212: [CMS-concurrent-preclean: 0.011/0.031 secs] [Times: user=0.03 sys=0.02, real=0.03 secs]
+(concurrent mode failure): 56046K->138K(57344K), 0.0271519 secs] 59032K->138K(65472K), [CMS Perm : 2079K->2078K(12288K)], 0.0273119 secs] [Times: user=0.03 sys=0.00, real=0.03 secs]
+```
+
+产生是由于CMS GC回收年老代的速度太慢，导致年老代在CMS完成前就被占满，同时业务线程将对象放入老年代，而此时老年代空间不足，引起full gc，或者在做Minor GC的时候，新生代Survivor空间放不下，需要放入老年代，而老年代也放不下而产生的。
+
+避免这个现象的产生就是调低触发CMS GC执行的阀值，也就是调小**-XX:CMSInitiatingOccupancyFraction**参数的值，默认情况是当旧生代已用空间为68%时,让CMS更早更频繁的触发，降低年老代被占满的可能。
+
+我们的应用暂时负载比较低，在生产环境上年老代的增长非常缓慢，因此暂时设置此参数为80。在压测环境下，这个参数的表现还可以，没有出现过Concurrent mode failed。
+
+## 总结：
+
+1. promotion failed – concurrent mode failure
+    Minor GC后， Survivor空间容纳不了剩余对象，将要放入老年代，老年代有碎片或者不能容纳这些对象，就产生了concurrent mode failure, 然后进行stop-the-world的Serial Old收集器。
+
+   解决办法：-XX:UseCMSCompactAtFullCollection -XX:CMSFullGCBeforeCompaction=5 或者调大新生代或者Survivor空间
+
+2. concurrent mode failure
+
+   CMS是和业务线程并发运行的，在执行CMS的过程中有业务对象需要在老年代直接分配，例如大对象，但是老年代没有足够的空间来分配，所以导致concurrent mode failure, 然后需要进行stop-the-world的Serial Old收集器。
+
+   解决办法：+XX:CMSInitiatingOccupancyFraction，调大老年代的空间 +XX:CMSMaxAbortablePrecleanTime
+
+**总结一句话：使用标记整理清除碎片和提早进行CMS操作。**
+
+## 参考资料
+
+- https://www.jianshu.com/p/ca1b0d4107c5
+- https://calfgz.github.io/blog/2017/08/jvm-cms.html
