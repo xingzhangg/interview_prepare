@@ -18,7 +18,7 @@ MQ、ES、Redis、Dubbo，上来先问你一些思考的问题，原理（kafka 
 - 第四层：registry 层，服务注册层，负责服务的注册与发现
 - 第五层：cluster 层，集群层，封装多个服务提供者的路由以及负载均衡，将多个实例组合成一个服务
 - 第六层：monitor 层，监控层，对 rpc 接口的调用次数和调用时间进行监控
-- 第七层：protocal 层，远程调用层，封装 rpc 调用
+- 第七层：protocol 层，远程调用层，封装 rpc 调用
 - 第八层：exchange 层，信息交换层，封装请求响应模式，同步转异步
 - 第九层：transport 层，网络传输层，抽象 mina 和 netty 为统一接口
 - 第十层：serialize 层，数据序列化层
