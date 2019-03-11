@@ -32,7 +32,7 @@ class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 
 ​           1、这个问题很简单，既然在JPA的框架里面配置了datasource，那自然会从这个datasource里面去获得连接。
 
-​           2、jdbc的事务配置是在Connection对消里面有对应的方法，比如setAutoCommit,commit,rollback这些方法就是对事务的操作。
+​           2、jdbc的事务配置是在Connection对像里面有对应的方法，比如setAutoCommit,commit,rollback这些方法就是对事务的操作。
 
 ​           3、Spring需要操作事务，那必须要对Connection来进行设置。Spring的AOP可以拦截业务处理方法，并且也知道业务处理方法里面的DAO操作的JAP框架是从datasource里面获取Connection对象，那么Spring需要对当前拦截的业务处理方法进行事务控制，那必然需要得到他内部的Connection对象。整体的结构图如下：
 
