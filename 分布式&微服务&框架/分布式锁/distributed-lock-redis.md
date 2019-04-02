@@ -1,14 +1,4 @@
-## 前言
-
-因此业界常用的解决方案通常是借助于一个第三方组件并利用它自身的排他性来达到多进程的互斥。如：
-
-- 基于 DB 的唯一索引。
-- 基于 ZK 的临时有序节点。
-- 基于 Redis 的 `NX EX` 参数。
-
-这里主要基于 Redis 进行讨论。
-
-## 实现
+## 普通实现
 
 既然是选用了 Redis，那么它就得具有排他性才行。同时它最好也有锁的一些基本特性：
 
@@ -42,17 +32,13 @@
     }
 ```
 
-注意这里使用的 jedis 的
+注意这里使用的 jedis 的api。
 
 ```java
 String set(String key, String value, String nxxx, String expx, long time);
 ```
 
-api。
-
-**该命令可以保证 NX EX 的原子性。**
-
-**一定不要把两个命令(NX EX)分开执行，如果在 NX 之后程序出现问题就有可能产生死锁。**
+**该命令可以保证 NX EX 的原子性。一定不要把两个命令(NX EX)分开执行，如果在 NX 之后程序出现问题就有可能产生死锁。**
 
 #### 阻塞锁
 同时也可以实现一个阻塞锁：
@@ -141,135 +127,63 @@ api。
 - 利用超时机制解决了死锁。
 - Redis 支持集群部署提高了可用性。
 
-## 使用
 
-我自己有撸了一个完整的实现，并且已经用于了生产，有兴趣的朋友可以开箱使用:
 
-maven 依赖：
+## 基于lua脚本执行
 
-```xml
-<dependency>
-    <groupId>top.crossoverjie.opensource</groupId>
-    <artifactId>distributed-redis-lock</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
-配置 bean :
-
-```java
-@Configuration
-public class RedisLockConfig {
-
-    @Bean
-    public RedisLock build(){
-        RedisLock redisLock = new RedisLock() ;
-        HostAndPort hostAndPort = new HostAndPort("127.0.0.1",7000) ;
-        JedisCluster jedisCluster = new JedisCluster(hostAndPort) ;
-        // Jedis 或 JedisCluster 都可以
-        redisLock.setJedisCluster(jedisCluster) ;
-        return redisLock ;
-    }
-
-}
+说道Redis分布式锁大部分人都会想到： `setnx+lua`，或者知道 `set key value px milliseconds nx`。后一种方式的核心实现命令如下：
 
 ```
+- 获取锁（unique_value可以是UUID等）
 
-使用：
-
-```java
-    @Autowired
-    private RedisLock redisLock ;
-
-    public void use() {
-        String key = "key";
-        String request = UUID.randomUUID().toString();
-        try {
-            boolean locktest = redisLock.tryLock(key, request);
-            if (!locktest) {
-                System.out.println("locked error");
-                return;
-            }
+SET resource_name unique_value NX PX 30000
 
 
-            //do something
+- 释放锁（lua脚本中，一定要比较value，防止误解锁）
 
-        } finally {
-            redisLock.unlock(key,request) ;
-        }
+if redis.call("get",KEYS[1]) == ARGV[1] then
 
-    }
+ return redis.call("del",KEYS[1])
 
+else
+
+ return 0
+
+end
 ```
 
-使用很简单。这里主要是想利用 Spring 来帮我们管理 RedisLock 这个单例的 bean，所以在释放锁的时候需要手动(因为整个上下文只有一个 RedisLock 实例)的传入 key 以及 request(api 看起来不是特别优雅)。
-
-也可以在每次使用锁的时候 new 一个 RedisLock 传入 key 以及 request，这样倒是在解锁时很方便。但是需要自行管理 RedisLock 的实例。各有优劣吧。
-
-项目源码在：
-
-[https://github.com/crossoverJie/distributed-redis-tool](https://github.com/crossoverJie/distributed-redis-tool)
-
-欢迎讨论。
-
-## 单测
-
-在做这个项目的时候让我不得不想提一下**单测**。
-
-因为这个应用是强依赖于第三方组件的(Redis)，但是在单测中我们需要排除掉这种依赖。比如其他伙伴 fork 了该项目想在本地跑一遍单测，结果运行不起来：
-
-1. 有可能是 Redis 的 ip、端口和单测里的不一致。
-2. Redis 自身可能也有问题。
-3. 也有可能是该同学的环境中并没有 Redis。
-
-所以最好是要把这些外部不稳定的因素排除掉，单测只测我们写好的代码。
-
-于是就可以引入单测利器 `Mock` 了。
-
-它的想法很简答，就是要把你所依赖的外部资源统统屏蔽掉。如：数据库、外部接口、外部文件等等。
-
-使用方式也挺简单，可以参考该项目的单测：
-
-```java
-    @Test
-    public void tryLock() throws Exception {
-        String key = "test";
-        String request = UUID.randomUUID().toString();
-        Mockito.when(jedisCluster.set(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyLong())).thenReturn("OK");
-
-        boolean locktest = redisLock.tryLock(key, request);
-        System.out.println("locktest=" + locktest);
-
-        Assert.assertTrue(locktest);
-
-        //check
-        Mockito.verify(jedisCluster).set(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyLong());
-    }
-```
-
-这里只是简单演示下，可以的话下次仔细分析分析。
-
-它的原理其实也挺简单，debug 的话可以很直接的看出来：
-
-![](https://ws2.sinaimg.cn/large/006tKfTcgy1fpxho866hbj311u0ej42f.jpg)
-
-这里我们所依赖的 JedisCluster 其实是一个 `cglib 代理对象`。所以也不难想到它是如何工作的。
-
-比如这里我们需要用到 JedisCluster 的 set 函数并需要它的返回值。
-
-Mock 就将该对象代理了，并在实际执行 set 方法后给你返回了一个你自定义的值。
-
-这样我们就可以随心所欲的测试了，**完全把外部依赖所屏蔽了**。
-
-## 总结
-
-至此一个基于 Redis 的分布式锁完成，但是依然有些问题。
-
-- 如在 key 超时之后业务并没有执行完毕但却自动释放锁了，这样就会导致并发问题。
-- 就算 Redis 是集群部署的，如果每个节点都只是 master 没有 slave，那么 master 宕机时该节点上的所有 key 在那一时刻都相当于是释放锁了，这样也会出现并发问题。就算是有 slave 节点，但如果在数据同步到 salve 之前 master 宕机也是会出现上面的问题。
-
-感兴趣的朋友还可以参考 [Redisson](https://github.com/redisson/redisson) 的实现。
 
 
+这种实现方式有3大要点（也是面试概率非常高的地方）：
+
+1. set命令要用 `set key value px milliseconds nx`；
+2. value要具有唯一性；
+3. 释放锁时要验证value值，不能误解锁；
+
+事实上这类琐最大的缺点就是它加锁时只作用在一个Redis节点上，即使Redis通过sentinel保证高可用，如果这个master节点由于某些原因发生了主从切换，那么就会出现锁丢失的情况：
+
+1. 在Redis的master节点上拿到了锁；
+2. 但是这个加锁的key还没有同步到slave节点；
+3. master故障，发生故障转移，slave节点升级为master节点；
+4. 导致锁丢失。
+
+正因为如此，Redis作者antirez基于分布式环境下提出了一种更高级的分布式锁的实现方式：**Redlock**。笔者认为，Redlock也是Redis所有分布式锁实现方式中唯一能让面试官高潮的方式。
+
+
+
+## Redlock实现
+
+在Redis的分布式环境中，我们假设有N个Redis master。这些节点**完全互相独立，不存在主从复制或者其他集群协调机制**。我们确保将在N个实例上使用与在Redis单实例下相同方法获取和释放锁。现在我们假设有5个Redis master节点，同时我们需要在5台服务器上面运行这些Redis实例，这样保证他们不会同时都宕掉。
+
+为了取到锁，客户端应该执行以下操作:
+
+- 获取当前Unix时间，以毫秒为单位。
+- 依次尝试从5个实例，使用相同的key和**具有唯一性的value**（例如UUID）获取锁。当向Redis请求获取锁时，客户端应该设置一个网络连接和响应超时时间，这个超时时间应该小于锁的失效时间。例如你的锁自动失效时间为10秒，则超时时间应该在5-50毫秒之间。这样可以避免服务器端Redis已经挂掉的情况下，客户端还在死死地等待响应结果。如果服务器端没有在规定时间内响应，客户端应该尽快尝试去另外一个Redis实例请求获取锁。
+- 客户端使用当前时间减去开始获取锁时间（步骤1记录的时间）就得到获取锁使用的时间。**当且仅当从大多数**（N/2+1，这里是3个节点）**的Redis节点都取到锁，并且使用的时间小于锁失效时间时，锁才算获取成功**。
+- 如果取到了锁，key的真正有效时间等于有效时间减去获取锁所使用的时间（步骤3计算的结果）。
+- 如果因为某些原因，获取锁失败（没有在至少N/2+1个Redis实例取到锁或者取锁时间已经超过了有效时间），客户端应该在**所有的Redis实例上进行解锁**（即便某些Redis实例根本就没有加锁成功，防止某些节点获取到锁但是客户端没有得到响应而导致接下来的一段时间不能被重新获取锁）。
+
+实现方式：
+
+* https://www.jianshu.com/p/f302aa345ca8
+* https://www.jianshu.com/p/7e47a4503b87
