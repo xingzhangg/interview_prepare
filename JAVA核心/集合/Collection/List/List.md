@@ -280,7 +280,7 @@ transient Node<E> first;
 transient Node<E> last;
 ```
 
-<div align="center"> <img src="../../../pics/49495c95-52e5-4c9a-b27b-92cf235ff5ec.png" width="500"/> </div><br>
+![49495c95-52e5-4c9a-b27b-92cf235ff5ec.png](https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4nohtfj30i205j0sq.jpg)
 
 ### 2. 与 ArrayList 的比较
 

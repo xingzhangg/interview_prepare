@@ -12,7 +12,7 @@
 
 ---
 
-![](../pics/java-collection-framework.png)
+![](https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9o4rf7vcj30sj1b3adf.jpg)
 
 ## 参考
 

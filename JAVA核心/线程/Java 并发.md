@@ -221,7 +221,7 @@ public void run() {
 }
 ```
 
-需要注意的是如果当前线程获得了锁，sleep方法并不会失去锁。sleep方法经常拿来与Object.wait()方法进行比价，这也是面试经常被问的地方。
+需要注意的是如果当前线程获得了锁，sleep方法并不会失去锁。sleep方法经常拿来与Object.wait()方法进行比较，这也是面试经常被问的地方。
 
 > **sleep() VS wait()**
 

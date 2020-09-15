@@ -16,7 +16,7 @@
 
 ## Collection
 
-<div align="center"> <img src="../pics/VP6n3i8W48Ptde8NQ9_0eSR5eOD6uqx.png"/> </div><br>
+<div align="center"> <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4p31nlj30oy0au0t1.jpg"/> </div><br>
 
 ### 1. Set
 
@@ -42,7 +42,7 @@
 
 ## Map
 
-<div align="center"> <img src="../pics/SoWkIImgAStDuUBAp2j9BKfBJ4vLy4q.png"/> </div><br>
+<div align="center"> <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9oc6reafj30ek07u0ss.jpg"/> </div><br>
 
 - TreeMap：基于红黑树实现。
 
@@ -57,7 +57,7 @@
 
 ## 迭代器模式
 
-<div align="center"> <img src="../pics/SoWkIImgAStDuUBAp2j9BKfBJ4vLy0G.png"/> </div><br>
+<div align="center"> <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9ockp666j308x0au0su.jpg"/> </div><br>
 
 Collection 继承了 Iterable 接口，其中的 iterator() 方法能够产生一个 Iterator 对象，通过这个对象就可以迭代遍历 Collection 中的元素。
 

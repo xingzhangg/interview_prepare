@@ -39,7 +39,10 @@ static int indexFor(int h, int length){
 但这时候问题就来了，这样就算我的散列值分布再松散，要是只取最后几位的话碰撞也会很严重。更要命的是如果散列本身做得不好，分布上成等差数列的漏洞，恰好使最后几个低位呈现规律性重复，就无比蛋疼。
 
 这时候“扰动函数”的价值就体现出来了，说到这里大家应该猜出来了。看下面这个图，
-<div align="center"> <img src="../../pics/4acf898694b8fb53498542dc0c5f765a_hd.png" width=""/> </div><br>
+<div align="center">
+  <!-- <img src="../../pics/4acf898694b8fb53498542dc0c5f765a_hd.png" width=""/> -->
+  <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4ol0akj30ga09cmxw.jpg" width=""/>
+</div><br>
 
 右移16位，正好是32bit的一半，自己的高半区和低半区做异或，就是为了混合原始hash码的高位和低位，以此来加大低位的随机性。而且混合后的地位掺杂了高位的部分特征，这样高位的信息也被变相保留下来。
 

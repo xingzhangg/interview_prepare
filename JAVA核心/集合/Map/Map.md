@@ -12,7 +12,7 @@ transient Entry[] table;
 
 Entry 存储着键值对。它包含了四个字段，从 next 字段我们可以看出 Entry 是一个链表。即数组中的每个位置被当成一个桶，一个桶存放一个链表。HashMap 使用拉链法来解决冲突，同一个链表中存放哈希值相同的 Entry。
 
-<div align="center"> <img src="../../pics/8fe838e3-ef77-4f63-bf45-417b6bc5c6bb.png" width="600"/> </div><br>
+![8fe838e3-ef77-4f63-bf45-417b6bc5c6bb.png](https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4o9kdgj30kz0cy0t0.jpg)
 
 ```java
 static class Entry<K,V> implements Map.Entry<K,V> {
@@ -88,7 +88,7 @@ map.put("K3", "V3");
 - 计算键值对所在的桶；
 - 在链表上顺序查找，时间复杂度显然和链表的长度成正比。
 
-<div align="center"> <img src="../../pics/49d6de7b-0d0d-425c-9e49-a1559dc23b10.png" width="600"/> </div><br>
+<div align="center"> <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4o3g1zj30lf0cb0t2.jpg" width="600"/> </div><br>
 
 ### 3. put 操作
 
@@ -426,7 +426,7 @@ final Segment<K,V>[] segments;
 static final int DEFAULT_CONCURRENCY_LEVEL = 16;
 ```
 
-<div align="center"> <img src="../../pics/3fdfc89d-719e-4d93-b518-29fa612b3b18.png"/> </div><br>
+<div align="center"> <img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gf9n4oprnvj30pr0ij0t3.jpg"/> </div><br>
 
 ### 2. size 操作
 
